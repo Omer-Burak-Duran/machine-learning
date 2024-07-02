@@ -74,7 +74,7 @@ model = StockPricePredictor().to(device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-num_epochs = 100
+num_epochs = 10
 for epoch in range(num_epochs):
     model.train()
     for inputs, targets in train_loader:
