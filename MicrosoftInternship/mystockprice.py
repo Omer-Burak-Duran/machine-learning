@@ -37,7 +37,7 @@ class StockDataset(Dataset):
 
 
 
-# Split the dataset into training and testing
+##########   Split the dataset into training and testing   ##########
 training_start = '1987-01-01'
 training_end = '2017-12-31'
 test_start = '2018-01-01'
@@ -88,7 +88,7 @@ class StockPricePredictor(nn.Module):
 
 print(f"Is CUDA supported by this system? {torch.cuda.is_available()}")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = StockPricePredictor(hidden1_size=200, hidden2_size=150).to(device)
+model = StockPricePredictor(input_size=1, hidden1_size=256, hidden2_size=256, dense1_size=128, dense2_size=64).to(device)
 
 
 
@@ -96,9 +96,13 @@ model = StockPricePredictor(hidden1_size=200, hidden2_size=150).to(device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-num_epochs = 10
+num_epochs = 20
+train_losses = []
+val_losses = []
+
 for epoch in range(num_epochs):
     model.train()
+    batch_train_losses = []
     for inputs, targets in train_loader:
         inputs, targets = inputs.to(device), targets.to(device)
         inputs = inputs.unsqueeze(-1)  # Add feature dimension
@@ -109,8 +113,28 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        
+        batch_train_losses.append(loss.item())
     
-    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.8f}')
+    train_loss = np.mean(batch_train_losses)
+    train_losses.append(train_loss)
+    
+    # Validation loss
+    model.eval()
+    batch_val_losses = []
+    with torch.no_grad():
+        for inputs, targets in test_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            inputs = inputs.unsqueeze(-1)  # Add feature dimension
+            outputs = model(inputs).squeeze(-1)
+            
+            val_loss = criterion(outputs, targets)
+            batch_val_losses.append(val_loss.item())
+    
+    val_loss = np.mean(batch_val_losses)
+    val_losses.append(val_loss)
+    
+    print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.8f}, Val Loss: {val_loss:.8f}')
 
 
 
