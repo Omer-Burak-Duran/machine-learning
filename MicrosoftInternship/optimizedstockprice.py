@@ -16,7 +16,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # 2) Load and Preprocess the Data
 
 # Load the data
-data = pd.read_csv('MyMLProjectsMSFT.csv', parse_dates=['Date'])
+data = pd.read_csv('MicrosoftInternship/MSFT.csv', parse_dates=['Date'])
 data = data[(data['Date'] >= '1987-01-01') & (data['Date'] <= '2021-12-31')]
 data = data[['Date', 'Close']]
 
